@@ -1,6 +1,6 @@
-#include <menu.h>
 #include <stdlib.h>
 #include <string.h>
+#include "menu.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 	4
@@ -11,7 +11,6 @@ char *choices[] = {
                         "Exit",
                         (char *)NULL,
                   };
-void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
 
 int log_menu()
 {	ITEM **my_items;

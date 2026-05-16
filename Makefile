@@ -12,9 +12,11 @@ $(BIN)/cliente:
 	      $(SRC)/cliente/gui/menu.c \
 	      -lncurses \
 		  -lmenu \
+		  -pthread\
 	      -o $(BIN)/cliente
 
 $(BIN)/servidor:
 	mkdir -p $(BIN)
 	$(CC) $(SRC)/servidor/servidor.c \
+		  -pthread\
 	      -o $(BIN)/servidor
