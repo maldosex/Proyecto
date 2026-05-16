@@ -3,13 +3,19 @@
 #include <semaphore.h>
 #include <sys/stat.h>
 #include <pthread.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 #include<sys/types.h>
-#include<sys/ipc.h>
-#include<sys/sem.h>
 #include<stdio.h>
 #include<stdlib.h>
 #include<unistd.h>
+
+typedef struct
+{
+    pid_t pid;
+
+}shm_general;
 
 int main(){
     sem_t * mutex_general, *solicitud, *respuesta;
@@ -26,7 +32,15 @@ int main(){
 
     printf("Cieroo las solicitudes\n");
     sem_wait(mutex_general);
-    printf("Soy el proceso\n");
+
+    //Acceder a shm_general
+    printf("Soy el proceso %d\n,", getpid());
+
+    int shm_fd = shm_open("/shm_general", O_RDWR, 0666);
+    shm_general * shm_g = mmap(NULL, sizeof(shm_general), PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+    shm_g->pid = getpid();
+
     printf("Mando mi solicitud...\n");
     sleep(3);
     sem_post(solicitud);
