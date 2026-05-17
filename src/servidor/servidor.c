@@ -9,6 +9,7 @@
 #include<sys/types.h>
 #include<stdlib.h>
 #include<unistd.h>
+#include<string.h>
 
 
 typedef struct
@@ -17,11 +18,16 @@ typedef struct
 
 }shm_general;
 
+typedef struct{
+    sem_t solicitud_lista;
+    sem_t respuesta_lista;
+    char solicitud[200];
+    char respuesta[200];
+}shm_privada;
 
 
 
-
-void * atender_cliente();
+void * atender_cliente(void * shmem);
 
 int main(){
     printf("Soy el servidor\n");
@@ -53,21 +59,43 @@ int main(){
         printf("Llego cliente: %d\n", shm_g->pid);
         printf("Lo atiendo...\n");
         
-        
-        sleep(3);
-        printf("Servidor mando respuesta...\n");
-        sleep(3);
+        //Crear memoria privada
+
+        char name_shmem[64];
+        sprintf(name_shmem,"/shm_%d",shm_g->pid);
+
+
+        int shmp_fd = shm_open(name_shmem, O_CREAT|O_RDWR, 0666);
+        ftruncate(shmp_fd, sizeof(shm_privada));
+        shm_privada * shm_p = mmap(NULL, sizeof(shm_privada), PROT_READ|PROT_WRITE, MAP_SHARED, shmp_fd, 0);
+
+        sem_init(&shm_p->respuesta_lista, 1, 0);
+        sem_init(&shm_p->solicitud_lista, 1, 0);
+
+        //Crear hilo para el cliente
+        pthread_t thread;
+        pthread_create(&thread, NULL, atender_cliente, shm_p);
         sem_post(respuesta);
         
-        //Hilo para atender al cliente
-        pthread_t thread;
-        pthread_create(&thread, NULL, atender_cliente, NULL);
+        
     }
     return 0;
 }
 
-void *atender_cliente(){
-    printf("Hilo para cliente\n");
+void *atender_cliente(void * shmem){
     pthread_detach(pthread_self());
+    printf("Hilo para cliente\n");
+
+    shm_privada *shm_p = (shm_privada *)shmem;
+
+    int i = 0;
+    while (i<3)
+    {
+        sem_wait(&shm_p->solicitud_lista);
+        printf("%d Cliente dice: %s\n", i, shm_p->solicitud);
+        strcpy(shm_p->respuesta,"Hola cliente");
+        sem_post(&shm_p->respuesta_lista);
+        i++;
+    }
     return NULL;
 }
