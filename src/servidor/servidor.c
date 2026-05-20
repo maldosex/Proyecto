@@ -11,6 +11,13 @@
 #include<unistd.h>
 #include<string.h>
 
+#include "bd/db.h"
+#include "auth_handler.h"
+#include "router.h"
+#include "bd/file_manager.h"
+#include "../../include/cJSON.h"
+#include "router.h"
+
 
 typedef struct
 {
@@ -21,8 +28,8 @@ typedef struct
 typedef struct{
     sem_t solicitud_lista;
     sem_t respuesta_lista;
-    char solicitud[200];
-    char respuesta[200];
+    char solicitud[1024];
+    char respuesta[1024];
 }shm_privada;
 
 
@@ -51,6 +58,20 @@ int main(){
     int shm_fd = shm_open("/shm_general", O_CREAT|O_RDWR, 0666);
     ftruncate(shm_fd, sizeof(shm_general));
     shm_general * shm_g = mmap(NULL, sizeof(shm_general), PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0);
+
+    db_init("src/servidor/datos.json", "db_auth");
+
+    printf("%s\n", get_data("src/servidor/datos.json"));
+    cJSON * req = cJSON_CreateObject();
+    cJSON * res = cJSON_CreateObject();
+    cJSON_AddStringToObject(req, "action", "login");
+    cJSON_AddStringToObject(req, "usuario", "diego");
+    cJSON_AddStringToObject(req, "contra", "1234");
+    printf("El request es %s\n", cJSON_Print(req));
+    route_request (req, res);
+    printf ("La respuesta es %s\n", cJSON_Print(res));
+
+
 
     //Iniciar escucha de peticiones
     while(1){
@@ -89,13 +110,18 @@ void *atender_cliente(void * shmem){
     shm_privada *shm_p = (shm_privada *)shmem;
 
     int i = 0;
-    while (i<3)
+    while (1)
     {
         sem_wait(&shm_p->solicitud_lista);
-        printf("%d Cliente dice: %s\n", i, shm_p->solicitud);
-        strcpy(shm_p->respuesta,"Hola cliente");
+        printf("Cliente dice: %s\n", shm_p->solicitud);
+        cJSON *request = cJSON_Parse(shm_p->solicitud);
+        cJSON * response = cJSON_CreateObject();
+        route_request(request, response);
+        char * resp_str = cJSON_PrintUnformatted(response);
+        strcpy(shm_p->respuesta,resp_str);
+        
+
         sem_post(&shm_p->respuesta_lista);
-        i++;
     }
     return NULL;
 }

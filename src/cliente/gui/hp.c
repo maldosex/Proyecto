@@ -1,18 +1,19 @@
 #include <stdlib.h>
 #include <string.h>
-#include "menu.h"
+#include "hp.h"
 
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define CTRLD 	4
 
-char *choices[] = {
-                        "Log In",
-                        "Register",
-                        "Exit",
+char *module_choices[] = {
+                        "Habit Store",
+                        "My Habits",
+                        "My progress",
+                        "Settings",
                         (char *)NULL,
                   };
 
-int log_menu()
+int hp_menu()
 {	ITEM **my_items;
 	int c;				
 	MENU *my_menu;
@@ -28,10 +29,10 @@ int log_menu()
 	init_pair(1, COLOR_RED, COLOR_BLACK);
 
 	/* Create items */
-        n_choices = ARRAY_SIZE(choices);
+        n_choices = ARRAY_SIZE(module_choices);
         my_items = (ITEM **)calloc(n_choices, sizeof(ITEM *));
         for(i = 0; i < n_choices; ++i)
-                my_items[i] = new_item(choices[i], " ");
+                my_items[i] = new_item(module_choices[i], " ");
 
 	/* Crate menu */
 	my_menu = new_menu((ITEM **)my_items);
@@ -49,7 +50,7 @@ int log_menu()
 
 	/* Print a border around the main window and print a title */
         box(my_menu_win, 0, 0);
-	print_in_middle(my_menu_win, 1, 0, 40, "My Menu", COLOR_PAIR(1));
+	print_in_middle(my_menu_win, 1, 0, 40, "Habit Flow", COLOR_PAIR(1));
 	mvwaddch(my_menu_win, 2, 0, ACS_LTEE);
 	mvwhline(my_menu_win, 2, 1, ACS_HLINE, 38);
 	mvwaddch(my_menu_win, 2, 39, ACS_RTEE);
@@ -94,29 +95,6 @@ int log_menu()
                 free_item(my_items[i]);
 	clear();
     refresh();
-	endwin();
 	return option;
 }
 
-void print_in_middle(WINDOW *win, int starty, int startx, int width, char *string, chtype color)
-{	int length, x, y;
-	float temp;
-
-	if(win == NULL)
-		win = stdscr;
-	getyx(win, y, x);
-	if(startx != 0)
-		x = startx;
-	if(starty != 0)
-		y = starty;
-	if(width == 0)
-		width = 80;
-
-	length = strlen(string);
-	temp = (width - length)/ 2;
-	x = startx + (int)temp;
-	wattron(win, color);
-	mvwprintw(win, y, x, "%s", string);
-	wattroff(win, color);
-	refresh();
-}

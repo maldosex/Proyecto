@@ -1,0 +1,15 @@
+{
+	"usuarios":	[{
+			"usuario":	"juan",
+			"contra":	"2345"
+		}, {
+			"usuario":	"diego",
+			"contra":	"1234"
+		}, {
+			"usuario":	"luis",
+			"contra":	"1234"
+		}, {
+			"usuario":	"ale",
+			"contra":	"spnb"
+		}]
+}
