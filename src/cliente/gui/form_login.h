@@ -1,7 +1,8 @@
 #include <form.h>
+#include "menu.h"
+#include "../api/api.h"
 
 
 char *trim(char *str);
 
-static void print_in_middl(WINDOW *win, int starty, int startx, int width, char *string, chtype color);
-int form_login(char * usuario, char * contra) ;
+int form_login(shm_privada *shm_p, char * usuario, char * contra);

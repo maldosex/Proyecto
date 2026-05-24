@@ -12,5 +12,9 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<string.h>
+#include "../structs.h"
 
-cJSON * get_login_req(char * usuario, char * contra);
+
+int api_login(shm_privada *shm_p, char * usuario, char * contra, char *msg);
+
+int api_register(shm_privada *shm_p, Register_data data);

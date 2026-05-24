@@ -14,8 +14,11 @@
 #include "../../include/cJSON.h"
 #include "api/api.h"
 #include "gui/form_login.h"
+#include "gui/form_register.h"
 #include "menu.h"
 #include "gui/hp.h"
+
+#include "structs.h"
 
 typedef struct
 {
@@ -23,12 +26,7 @@ typedef struct
 
 }shm_general;
 
-typedef struct{
-    sem_t solicitud_lista;
-    sem_t respuesta_lista;
-    char solicitud[1024];
-    char respuesta[1024];
-}shm_privada;
+
 
 int main(){
     sem_t * mutex_general, *solicitud, *respuesta;
@@ -75,46 +73,39 @@ int main(){
     char str_usuario[100];
     char str_contra[100];
 
-    cJSON * json_req = cJSON_CreateObject();
+    initscr();
+    start_color();
+	curs_set(1);
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
 
     while (1){
 
 
-        if(log_menu() == 0){
-            form_login(str_usuario, str_contra);
+        int log_menu_option = log_menu();
+
+        if(log_menu_option == 0){
+            int login_status = form_login(shm_p, str_usuario, str_contra);
+            if (login_status == 0)
+            {
+                hp_menu();
+            }
+            
         }
-
-        cJSON*  req = get_login_req(str_usuario, str_contra);
-        cJSON * res = cJSON_CreateObject();
-        char * json_str = cJSON_PrintUnformatted(req);
-
-        snprintf(shm_p->solicitud,sizeof(shm_p->solicitud),"%s",json_str);
-
-        free(json_str);
-
-        strcpy(shm_p->solicitud, cJSON_Print(req));
-        sem_post(&shm_p->solicitud_lista);
-        sem_wait(&shm_p->respuesta_lista);
-        printf("%d Server dice: %s\n", i, shm_p->respuesta);
-        cJSON * json_respuesta = cJSON_Parse(shm_p->respuesta);
-        int estatus = (cJSON_GetObjectItem(json_respuesta, "estatus"))->valueint;
-        printf("El estatus es: %d\n", estatus);
-        if(estatus == 0){
-            printf("Bienvenido login\n");
-            hp_menu();
+        else if (log_menu_option == 1){
+            Register_data data;
+            
+            int register_status = form_register(&data);
         }
-        else{
-            printf("Login fallido\n");
-        }
+        
         getchar();
         i++;
     }
 
-    cJSON_Delete(json_req);
+
+    endwin();
 
     return 0;
-
-
-    //log_menu();
 
 }

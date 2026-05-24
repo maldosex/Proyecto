@@ -5,26 +5,13 @@
 
 char *trim(char *str);
 
-static void print_in_middl(WINDOW *win, int starty, int startx, int width, char *string, chtype color) {
-    int length = strlen(string);
-    int x = startx + (width - length) / 2;
-    wattron(win, color | A_BOLD);
-    mvwprintw(win, starty, x, "%s", string);
-    wattroff(win, color | A_BOLD);
-}
 
-int form_login(char * usuario, char * contra) {
+int form_login(shm_privada *shm_p, char * usuario, char * contra){
     FIELD *field[3];
     FORM  *my_form;
     WINDOW *my_form_win;
     int ch, rows, cols;
 
-    initscr();
-    start_color();
-	curs_set(1);
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
 
     init_pair(1, COLOR_CYAN, COLOR_BLACK);
     init_pair(2, COLOR_WHITE, COLOR_BLUE);
@@ -55,7 +42,7 @@ int form_login(char * usuario, char * contra) {
     set_form_win(my_form, my_form_win);
     set_form_sub(my_form, derwin(my_form_win, rows, cols, 2, 2));
 
-    print_in_middl(my_form_win, 1, 0, 40, " LOGIN", COLOR_PAIR(1));
+    print_in_middle(my_form_win, 1, 0, 40, " LOGIN", COLOR_PAIR(1));
     
     post_form(my_form);
 
@@ -73,8 +60,10 @@ int form_login(char * usuario, char * contra) {
     wrefresh(my_form_win);
     
 
-	int enviar =0;
-    while((ch = wgetch(my_form_win)) != KEY_F(1)) {
+	int enviar = 0;
+    int status =10;
+    char msg[50];
+    while((ch = wgetch(my_form_win)) != KEY_F(1) && status != 0) {
         switch(ch) {
 			case KEY_BACKSPACE:
             case 127:
@@ -89,28 +78,28 @@ int form_login(char * usuario, char * contra) {
                 break;
             case 10: // Enter para aceptar
                 form_driver(my_form, REQ_VALIDATION);
-				enviar = 1;
-				goto fin;
+                status = api_login(shm_p, trim(field_buffer(field[0], 0)), trim(field_buffer(field[1], 0)), msg);
+                if(status == 0) goto cleanup;
+                else{
+                    mvwprintw(my_form_win,  9, 2, msg);
+                    wrefresh(my_form_win);
+                }
                 break;
             default:
                 form_driver(my_form, ch);
                 break;
         }
     }
-	fin:
-        if(enviar) {
-                strcpy(usuario, trim(field_buffer(field[0], 0)));
-                strcpy(contra, trim(field_buffer(field[1], 0)));
-		}
-        // Limpieza de ncurses
-        unpost_form(my_form);
-        free_form(my_form);
-        free_field(field[0]);
-        free_field(field[1]);
-        clear();
-        refresh();
-	    endwin();
-        return enviar; // Devolvemos 1 si quiere loguearse, 0 si canceló con F1
+    cleanup:
+    unpost_form(my_form);
+    free_form(my_form);
+    free_field(field[0]);
+    free_field(field[1]);
+    delwin(my_form_win); // Importante: eliminar ventana creada
+    clear();
+    refresh();
+    return status; 
+         // Devolvemos 1 si quiere loguearse, 0 si canceló con F1
 }
 
 

@@ -12,6 +12,7 @@ $(BIN)/cliente:
 	      $(SRC)/cliente/gui/menu.c \
 		  $(SRC)/cliente/api/api.c\
 		  $(SRC)/cliente/gui/form_login.c\
+		  $(SRC)/cliente/gui/form_register.c\
 		  $(SRC)/cliente/gui/hp.c\
 		  include/cJSON.c\
 	      -lncurses \

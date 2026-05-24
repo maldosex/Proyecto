@@ -62,14 +62,6 @@ int main(){
     db_init("src/servidor/datos.json", "db_auth");
 
     printf("%s\n", get_data("src/servidor/datos.json"));
-    cJSON * req = cJSON_CreateObject();
-    cJSON * res = cJSON_CreateObject();
-    cJSON_AddStringToObject(req, "action", "login");
-    cJSON_AddStringToObject(req, "usuario", "diego");
-    cJSON_AddStringToObject(req, "contra", "1234");
-    printf("El request es %s\n", cJSON_Print(req));
-    route_request (req, res);
-    printf ("La respuesta es %s\n", cJSON_Print(res));
 
 
 
@@ -117,6 +109,7 @@ void *atender_cliente(void * shmem){
         cJSON *request = cJSON_Parse(shm_p->solicitud);
         cJSON * response = cJSON_CreateObject();
         route_request(request, response);
+        printf ("La respuesta es %s\n", cJSON_Print(response));
         char * resp_str = cJSON_PrintUnformatted(response);
         strcpy(shm_p->respuesta,resp_str);
         

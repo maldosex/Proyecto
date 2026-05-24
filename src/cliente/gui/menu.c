@@ -19,12 +19,6 @@ int log_menu()
     WINDOW *my_menu_win;
     int n_choices, i;
 	
-	/* Initialize curses */
-	initscr();
-	start_color();
-        cbreak();
-        noecho();
-	keypad(stdscr, TRUE);
 	init_pair(1, COLOR_RED, COLOR_BLACK);
 
 	/* Create items */
@@ -94,7 +88,6 @@ int log_menu()
                 free_item(my_items[i]);
 	clear();
     refresh();
-	endwin();
 	return option;
 }
 
