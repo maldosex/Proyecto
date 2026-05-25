@@ -89,17 +89,17 @@ int main(){
             int login_status = form_login(shm_p, str_usuario, str_contra);
             if (login_status == 0)
             {
+                clear();
+                refresh();
                 hp_menu();
             }
             
         }
         else if (log_menu_option == 1){
-            Register_data data;
             
-            int register_status = form_register(&data);
+            int register_status = form_register(shm_p);
         }
         
-        getchar();
         i++;
     }
 

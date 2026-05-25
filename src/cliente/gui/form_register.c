@@ -3,11 +3,12 @@
 
 
 
-int form_register(Register_data *data){
+int form_register(shm_privada * shm_p){
 	FIELD *field[6];
     FORM  *my_form;
     WINDOW *my_form_win;
     int ch, rows, cols;
+    Register_data data;
 
     
 
@@ -68,7 +69,7 @@ int form_register(Register_data *data){
     wrefresh(my_form_win);
     
 
-	int enviar = 0;
+	int enviar = 0, status;
     while((ch = wgetch(my_form_win)) != KEY_F(1)) {
         switch(ch) {
 			case KEY_BACKSPACE:
@@ -91,7 +92,15 @@ int form_register(Register_data *data){
 					mvwprintw(my_form_win, 18, 4, "No deje espacios vacios");
 					break;
 				}
-				enviar = 1;[[]]
+                strcpy(data.usuario, trim(field_buffer(field[0], 0)));
+				strcpy(data.contra, trim(field_buffer(field[1], 0)));
+				strcpy(data.nombre, trim(field_buffer(field[2], 0)));
+				strcpy(data.apellido, trim(field_buffer(field[3], 0)));
+				strcpy(data.correo, trim(field_buffer(field[4], 0)));
+
+                status = api_register(shm_p, data);
+                enviar = 1;
+
 				goto fin;
                 break;
             default:
@@ -100,14 +109,6 @@ int form_register(Register_data *data){
         }
     }
 	fin:
-        if(enviar) {
-				printf("Bien\n");
-				strcpy(data->usuario, trim(field_buffer(field[0], 0)));
-				strcpy(data->contra, trim(field_buffer(field[1], 0)));
-				strcpy(data->nombre, trim(field_buffer(field[2], 0)));
-				strcpy(data->apellido, trim(field_buffer(field[3], 0)));
-				strcpy(data->correo, trim(field_buffer(field[4], 0)));
-		}
         // Limpieza de ncurses
         unpost_form(my_form);
         free_form(my_form);

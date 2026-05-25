@@ -38,3 +38,12 @@ char * get_data(const char * filename){
 
     return buffer;
 }
+
+int file_db_save(const char * filename, const char * data){
+
+    FILE * file = fopen(filename, "w");
+    if(file == NULL) return 1;
+    fputs(data, file);
+    fclose(file);
+    return 0; 
+}

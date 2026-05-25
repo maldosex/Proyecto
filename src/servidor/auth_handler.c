@@ -55,3 +55,20 @@ int handle_login(cJSON *json_solicitud, cJSON *json_respuesta) {
 
     return login_exitoso ? 0 : 1;
 }
+
+int handle_register(cJSON *json_solicitud, cJSON *json_respuesta){
+    int status = db_register_user(json_solicitud);
+    char msg[50];
+
+    cJSON_AddNumberToObject(json_respuesta, "estatus", status);
+    if(status == 0){
+        strcpy(msg, "Ok");
+    }
+    else if (status == 1)
+    {
+        strcpy(msg, "El usuario ya existe");
+    }
+    
+    cJSON_AddStringToObject(json_respuesta, "msg", msg);
+    return status;
+}

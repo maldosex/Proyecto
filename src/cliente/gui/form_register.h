@@ -7,6 +7,6 @@
 
 
 
-int form_register(Register_data *data);
+int form_register(shm_privada * shm_p);
 
 

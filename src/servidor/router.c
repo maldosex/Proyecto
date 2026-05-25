@@ -26,6 +26,14 @@ int route_request(cJSON *request, cJSON *response){
 
             handle_login(request, response);
             return 0;
+        }
+        if(!strcmp(string_action, "register")){
+
+            cJSON_DeleteItemFromObject(request, "action");
+            printf("Recibo register\n");
+
+            handle_register(request, response);
+            return 0;
 
         }
         return 1;
