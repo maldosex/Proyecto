@@ -56,6 +56,56 @@ int handle_login(cJSON *json_solicitud, cJSON *json_respuesta) {
     return login_exitoso ? 0 : 1;
 }
 
+int handle_log(cJSON *solicitud_json, cJSON *respuesta_json){
+    printf("Login datos: %s\n", cJSON_Print(solicitud_json));
+    cJSON *solicitud_username_json = cJSON_GetObjectItemCaseSensitive(solicitud_json, "usuario");
+    cJSON *solicitud_contra_json = cJSON_GetObjectItemCaseSensitive(solicitud_json, "contra");
+
+    if(!cJSON_IsString(solicitud_username_json) || !cJSON_IsString(solicitud_contra_json)){
+    return -1;
+}
+    //printf("En handle u = %s c = %s\n", usuario_req->valuestring, contra_req->valuestring);
+
+    char * solicitud_username_str = solicitud_username_json->valuestring;
+    char * solicitud_contra_str = solicitud_contra_json->valuestring;
+
+    Usuario_t solicitud_usuario;
+
+    int existe = db_usuarios_get_usuario_by_username(&solicitud_usuario, solicitud_username_str);
+
+
+
+    int estatus;
+    char msg[50];
+    int contra_correcta = 0;
+
+    if (existe){
+        contra_correcta = (strcmp(solicitud_usuario.contra, solicitud_contra_str) == 0);
+    }
+    cJSON *data_json = NULL;
+    if(!existe || !contra_correcta){
+        estatus = 1;
+        strcpy(msg, "usuario o contrasena incorrectos");
+    }
+    else{
+        estatus = 0;
+        strcpy(msg, "login correcto");
+
+        data_json = usuario_to_json(solicitud_usuario);
+    }
+
+
+    Respuesta_t respuesta = crear_respuesta(estatus, msg, data_json);
+    
+    respuesta_to_json(respuesta, respuesta_json);
+
+    return estatus;
+}
+
+
+
+
+
 int handle_register(cJSON *json_solicitud, cJSON *json_respuesta){
     int status = db_register_user(json_solicitud);
     char msg[50];

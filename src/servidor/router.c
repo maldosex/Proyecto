@@ -23,16 +23,25 @@ int route_request(cJSON *request, cJSON *response){
 
             cJSON_DeleteItemFromObject(request, "action");
             printf("Recibo login\n");
-
-            handle_login(request, response);
+            handle_log(request, response);
             return 0;
         }
+
         if(!strcmp(string_action, "register")){
 
             cJSON_DeleteItemFromObject(request, "action");
             printf("Recibo register\n");
 
             handle_register(request, response);
+            return 0;
+        }
+
+        if(!strcmp(string_action, "get_habits")){
+
+            cJSON_DeleteItemFromObject(request, "action");
+            printf("Recibo get \n");
+
+            get_habits(request, response);
             return 0;
 
         }

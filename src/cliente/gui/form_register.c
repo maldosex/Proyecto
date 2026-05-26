@@ -69,8 +69,10 @@ int form_register(shm_privada * shm_p){
     wrefresh(my_form_win);
     
 
-	int enviar = 0, status;
-    while((ch = wgetch(my_form_win)) != KEY_F(1)) {
+	int enviar = 0, status =10;
+
+    char msg[50];
+    while((ch = wgetch(my_form_win)) != KEY_F(1) && status != 0) {
         switch(ch) {
 			case KEY_BACKSPACE:
             case 127:
@@ -98,7 +100,12 @@ int form_register(shm_privada * shm_p){
 				strcpy(data.apellido, trim(field_buffer(field[3], 0)));
 				strcpy(data.correo, trim(field_buffer(field[4], 0)));
 
-                status = api_register(shm_p, data);
+                status = api_register(shm_p, data, msg);
+                if(status = 0) goto fin;
+                else{
+                    mvwprintw(my_form_win,  9, 2, msg);
+                    wrefresh(my_form_win);
+                }
                 enviar = 1;
 
 				goto fin;

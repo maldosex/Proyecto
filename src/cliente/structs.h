@@ -4,6 +4,8 @@
 
 #include <semaphore.h>
 
+#include "../../modelo/modelo.h"
+
 
 typedef struct{
     sem_t solicitud_lista;
@@ -19,5 +21,11 @@ typedef struct {
     char apellido[50];
     char correo [50];
 } Register_data;
+
+typedef struct {
+    char usuario[50];
+    char contra[50];
+    char nombre[50];
+} Habits_data;
 
 #endif

@@ -15,6 +15,7 @@
 #include "api/api.h"
 #include "gui/form_login.h"
 #include "gui/form_register.h"
+#include "gui/menu_myHabits.h"
 #include "menu.h"
 #include "gui/hp.h"
 
@@ -72,6 +73,7 @@ int main(){
     int i = 0;
     char str_usuario[100];
     char str_contra[100];
+    
 
     initscr();
     start_color();
@@ -91,7 +93,15 @@ int main(){
             {
                 clear();
                 refresh();
-                hp_menu();
+                int option = hp_menu();
+                if (option == 0)
+                {
+                    int count;
+                    Habito habitos[50];
+                    api_get_habits(shm_p, habitos, &count);
+                    int n = menu_available_habits(habitos, count);
+                }
+                
             }
             
         }

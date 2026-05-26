@@ -32,6 +32,14 @@ typedef struct{
     char respuesta[1024];
 }shm_privada;
 
+typedef struct{
+
+    int usuario_id;
+    int autenticado;
+    shm_privada *shm;
+
+}cliente_contexto;
+
 
 
 void * atender_cliente(void * shmem);
@@ -59,7 +67,13 @@ int main(){
     ftruncate(shm_fd, sizeof(shm_general));
     shm_general * shm_g = mmap(NULL, sizeof(shm_general), PROT_READ|PROT_WRITE, MAP_SHARED, shm_fd, 0);
 
-    db_init("src/servidor/datos.json", "db_auth");
+    db_usuarios_init("src/servidor/datos.json");
+    db_habitos_init("src/servidor/habitos.json");
+
+    Habito habitos[50];
+    int habitos_count;
+    db_habits_get(habitos, &habitos_count);
+    printf("Habito 1: %s\n", habitos[0].nombre);
 
     printf("%s\n", get_data("src/servidor/datos.json"));
 

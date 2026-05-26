@@ -1,4 +1,7 @@
 #include "../../../include/cJSON.h"
+
+#include "../structs.h"
+#include "../../../modelo/modelo.h"
 #include <stdio.h>
 #include "ncurses.h"
 #include <semaphore.h>
@@ -12,9 +15,10 @@
 #include<stdlib.h>
 #include<unistd.h>
 #include<string.h>
-#include "../structs.h"
 
 
 int api_login(shm_privada *shm_p, char * usuario, char * contra, char *msg);
 
-int api_register(shm_privada *shm_p, Register_data data);
+int api_register(shm_privada *shm_p, Register_data data, char *msg);
+
+int api_get_habits(shm_privada *shm_p, Habito * habitos, int *count);

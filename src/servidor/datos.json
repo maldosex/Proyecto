@@ -1,19 +1,28 @@
-{
-	"usuarios":	[{
-			"usuario":	"juan",
-			"contra":	"2345"
-		}, {
-			"usuario":	"diego",
-			"contra":	"1234"
-		}, {
-			"usuario":	"luis",
-			"contra":	"1234"
-		}, {
-			"usuario":	"ale",
-			"contra":	"spnb"
-		}, {
-			"usuario":	"sss",
-			"contra":	"a",
-			"nombre":	"s"
-		}]
-}
+[
+    {
+        "id": 1,
+        "usuario": "juan",
+        "contra": "2345"
+    },
+    {
+        "id": 2,
+        "usuario": "diego",
+        "contra": "1234"
+    },
+    {
+        "id": 3,
+        "usuario": "luis",
+        "contra": "1234"
+    },
+    {
+        "id": 4,
+        "usuario": "ale",
+        "contra": "spnb"
+    },
+    {
+        "id": 5,
+        "usuario": "sss",
+        "contra": "a",
+        "nombre": "s"
+    }
+]
