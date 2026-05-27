@@ -116,7 +116,7 @@ int form_register(shm_privada * shm_p){
                     goto fin;
                 }
                 else{
-                    mvwprintw(my_form_win,  18, 3, msg);
+                    mvwprintw(my_form_win,  18, 3, "%s", msg);
                     wrefresh(my_form_win);
                 }
 
