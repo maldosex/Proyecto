@@ -25,20 +25,6 @@ typedef struct
 
 }shm_general;
 
-typedef struct{
-    sem_t solicitud_lista;
-    sem_t respuesta_lista;
-    char solicitud[1024];
-    char respuesta[1024];
-}shm_privada;
-
-typedef struct{
-
-    int usuario_id;
-    int autenticado;
-    shm_privada *shm;
-
-}cliente_contexto;
 
 
 
@@ -69,6 +55,7 @@ int main(){
 
     db_usuarios_init("src/servidor/datos.json");
     db_habitos_init("src/servidor/habitos.json");
+    db_usuariohabito_init("src/servidor/usuariohabitos.json");
 
     Habito habitos[50];
     int habitos_count;
@@ -109,26 +96,38 @@ int main(){
     return 0;
 }
 
-void *atender_cliente(void * shmem){
+void *atender_cliente(void *shmem){
+
     pthread_detach(pthread_self());
+
     printf("Hilo para cliente\n");
 
-    shm_privada *shm_p = (shm_privada *)shmem;
+    cliente_contexto cliente_ctxt = {
+        .usuario_id = -1,
+        .autenticado = 0,
+        .shm = (shm_privada *)shmem
+    };
 
-    int i = 0;
-    while (1)
-    {
-        sem_wait(&shm_p->solicitud_lista);
-        printf("Cliente dice: %s\n", shm_p->solicitud);
-        cJSON *request = cJSON_Parse(shm_p->solicitud);
-        cJSON * response = cJSON_CreateObject();
-        route_request(request, response);
-        printf ("La respuesta es %s\n", cJSON_Print(response));
-        char * resp_str = cJSON_PrintUnformatted(response);
-        strcpy(shm_p->respuesta,resp_str);
-        
 
-        sem_post(&shm_p->respuesta_lista);
+    
+    while(1){
+
+        sem_wait(&cliente_ctxt.shm->solicitud_lista);
+
+        printf("Accion recibida: %d\n",cliente_ctxt.shm->solicitud.action);
+
+        printf("Data recibida: %s\n", cliente_ctxt.shm->solicitud.data);
+
+        route_request(&cliente_ctxt);
+
+        printf("Respuesta status: %d\n", cliente_ctxt.shm->respuesta.estatus);
+
+        printf("Respuesta msg: %s\n", cliente_ctxt.shm->respuesta.msg);
+
+        printf("Respuesta data: %s\n", cliente_ctxt.shm->respuesta.data);
+
+        sem_post(&cliente_ctxt.shm->respuesta_lista);
     }
+
     return NULL;
 }

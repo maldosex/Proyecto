@@ -2,123 +2,65 @@
 #include "bd/db.h"
 #include <stdbool.h>
 
-int handle_login(cJSON *json_solicitud, cJSON *json_respuesta) {
 
-    //extraer (json_solicitudsolicitud
-    printf("En handler, request: %s\n", cJSON_Print(json_solicitud));
-    cJSON *usuario_req = cJSON_GetObjectItemCaseSensitive(json_solicitud, "usuario");
-    cJSON *contra_req = cJSON_GetObjectItemCaseSensitive(json_solicitud, "contra");
-    printf("En handle u = %s c = %s\n", usuario_req->valuestring, contra_req->valuestring);
+int handle_log(cliente_contexto * cliente_ctx, Usuario_t usuario_login){
 
+    Usuario_t usuario_db;
 
-    // verificar la solicitud
-    if (!cJSON_IsString(usuario_req) || !cJSON_IsString(contra_req)) {
-        cJSON_AddNumberToObject(json_respuesta, "estatus", -1); // Error de formato
-        return -1;
-    }
+    int existe = db_usuarios_get_usuario_by_username(&usuario_db, usuario_login.username);
 
-    // obtener base de datos
-    cJSON *usuarios_auth = db_get_auth_info();
-    if (usuarios_auth == NULL) {
-        cJSON_AddNumberToObject(json_respuesta, "estatus", -2); // Error de BD
-        return -2;
-    }
-
-    cJSON *usuario_db = NULL;
-    bool login_exitoso = false;
-
-    // 3. Buscar en el arreglo con ArrayForEach
-    cJSON_ArrayForEach(usuario_db, usuarios_auth) {
-        cJSON *username_db = cJSON_GetObjectItemCaseSensitive(usuario_db, "usuario");
-        cJSON *contra_db = cJSON_GetObjectItemCaseSensitive(usuario_db, "contra");
-
-        if (cJSON_IsString(username_db) && cJSON_IsString(contra_db)) {
-            if((strcmp(usuario_req->valuestring, username_db->valuestring))== 0 && (strcmp(contra_req->valuestring, contra_db->valuestring))==0){
-                login_exitoso = true;
-                
-                //Armar la respuesta
-              
-
-                cJSON_AddNumberToObject(json_respuesta, "estatus", 0);
-                cJSON_AddItemToObject(json_respuesta, "usuario", cJSON_Duplicate(usuario_db, 1));
-                
-                break; // usuario encontrado
-            }
-        }
-    }
-
-    //no se encontro
-    if (!login_exitoso) {
-        cJSON_AddNumberToObject(json_respuesta, "estatus", 1); // Credenciales incorrectas
-    }
-
-
-    return login_exitoso ? 0 : 1;
-}
-
-int handle_log(cJSON *solicitud_json, cJSON *respuesta_json){
-    printf("Login datos: %s\n", cJSON_Print(solicitud_json));
-    cJSON *solicitud_username_json = cJSON_GetObjectItemCaseSensitive(solicitud_json, "usuario");
-    cJSON *solicitud_contra_json = cJSON_GetObjectItemCaseSensitive(solicitud_json, "contra");
-
-    if(!cJSON_IsString(solicitud_username_json) || !cJSON_IsString(solicitud_contra_json)){
-    return -1;
-}
-    //printf("En handle u = %s c = %s\n", usuario_req->valuestring, contra_req->valuestring);
-
-    char * solicitud_username_str = solicitud_username_json->valuestring;
-    char * solicitud_contra_str = solicitud_contra_json->valuestring;
-
-    Usuario_t solicitud_usuario;
-
-    int existe = db_usuarios_get_usuario_by_username(&solicitud_usuario, solicitud_username_str);
-
-
-
-    int estatus;
-    char msg[50];
     int contra_correcta = 0;
 
-    if (existe){
-        contra_correcta = (strcmp(solicitud_usuario.contra, solicitud_contra_str) == 0);
+    if(existe){
+
+        contra_correcta = (strcmp(usuario_db.contra, usuario_login.contra) == 0);
     }
-    cJSON *data_json = NULL;
+
     if(!existe || !contra_correcta){
-        estatus = 1;
-        strcpy(msg, "usuario o contrasena incorrectos");
-    }
-    else{
-        estatus = 0;
-        strcpy(msg, "login correcto");
 
-        data_json = usuario_to_json(solicitud_usuario);
+        cliente_ctx->shm->respuesta = crear_respuesta(1, "usuario o contrasena incorrectos", NULL);
+
+        return 1;
     }
 
+    cJSON *usuario_json = usuario_to_json(usuario_db);
+    char *usuario_str = cJSON_PrintUnformatted(usuario_json);
+    cliente_ctx->usuario_id = usuario_db.id;
+    cliente_ctx->autenticado =1;
+    cliente_ctx->shm->respuesta = crear_respuesta(0,"login correcto",usuario_str);
 
-    Respuesta_t respuesta = crear_respuesta(estatus, msg, data_json);
-    
-    respuesta_to_json(respuesta, respuesta_json);
+    free(usuario_str);
 
-    return estatus;
+    cJSON_Delete(usuario_json);
+
+    return 0;
 }
 
-
-
-
-
-int handle_register(cJSON *json_solicitud, cJSON *json_respuesta){
-    int status = db_register_user(json_solicitud);
+int handle_reg(Usuario_t usuario_a_registrar, Respuesta_t *respuesta){
+    //Se intenta el registro con la base de datos
+    int registro_estatus = db_user_register(usuario_a_registrar);
     char msg[50];
 
-    cJSON_AddNumberToObject(json_respuesta, "estatus", status);
-    if(status == 0){
-        strcpy(msg, "Ok");
+    //Estatus exitoso
+    if(registro_estatus == 0){
+        strcpy(msg, "Registro exitoso, haga login");
     }
-    else if (status == 1)
-    {
-        strcpy(msg, "El usuario ya existe");
+
+    //El registro no fue posible, ya existe el usuario
+    else if (registro_estatus == 1){
+        strcpy(msg, "Registro incorrecto, el usuario ya existe");
     }
-    
-    cJSON_AddStringToObject(json_respuesta, "msg", msg);
-    return status;
+
+
+    *respuesta = crear_respuesta(registro_estatus, msg, NULL);
+    return registro_estatus;
+
 }
+
+
+
+
+
+
+
+

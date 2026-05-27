@@ -13,7 +13,8 @@ $(BIN)/cliente:
 	      $(SRC)/cliente/api/api.c \
 	      $(SRC)/cliente/gui/form_login.c \
 	      $(SRC)/cliente/gui/form_register.c \
-	      $(SRC)/cliente/gui/menu_myHabits.c \
+	      $(SRC)/cliente/gui/menu_available_habits.c \
+	      $(SRC)/cliente/gui/men_myhabits.c \
 	      $(SRC)/cliente/gui/hp.c \
 	      include/cJSON.c \
 	      modelo/modelo.c \

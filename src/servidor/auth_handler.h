@@ -3,7 +3,10 @@
 #include <stdio.h>
 
 
-int handle_login(cJSON * json_request, cJSON *json_respuesta);
-int handle_log(cJSON *solicitud_json, cJSON *respuesta_json);
+#include "contexto_cliente.h"
 
-int handle_register(cJSON *json_solicitud, cJSON *json_respuesta);
+
+
+int handle_log(cliente_contexto * cliente_ctx, Usuario_t usuario_login);
+
+int handle_reg(Usuario_t usuario_login, Respuesta_t *respuesta);

@@ -1,11 +1,7 @@
-#include "menu_myHabits.h"
-
-#include <stdlib.h>
-#include <string.h>
-#include "menu.h"
+#include "men_myhabits.h"
 
 
-int menu_available_habits(Habito *habitos, int count){
+int menu_my_habits(Habito *habitos, int count, int * ids, int *selected_count){
 
     int i;
     char choices[30][100];
@@ -22,7 +18,7 @@ int menu_available_habits(Habito *habitos, int count){
 	int c;				
 	MENU *my_menu;
     WINDOW *my_menu_win;
-    int n_choices   ;
+    int n_choices;
 	
 	init_pair(1, COLOR_RED, COLOR_BLACK);
 
@@ -49,7 +45,7 @@ int menu_available_habits(Habito *habitos, int count){
 
 	/* Print a border around the main window and print a title */
         box(my_menu_win, 0, 0);
-	print_in_middle(my_menu_win, 1, 0, 40, "-----Habitos disponibles-----", COLOR_PAIR(1));
+	print_in_middle(my_menu_win, 1, 0, 40, "-----Mis habitos-----", COLOR_PAIR(1));
 	mvwaddch(my_menu_win, 2, 0, ACS_LTEE);
 	mvwhline(my_menu_win, 2, 1, ACS_HLINE, 38);
 	mvwaddch(my_menu_win, 2, 39, ACS_RTEE);
@@ -78,31 +74,28 @@ int menu_available_habits(Habito *habitos, int count){
 			case ' ':
 				menu_driver(my_menu, REQ_TOGGLE_ITEM);
 				break;
-        	case 10:{
-			    ITEM **items;
-			    char temp[300];
-			
-			    temp[0] = '\0';
-			
-			    items = menu_items(my_menu);
-			
-			    for(i = 0; i < item_count(my_menu); i++){
-				
-			        if(item_value(items[i]) == TRUE){
-					
-			            strcat(temp, item_name(items[i]));
-			            strcat(temp, " | ");
-			        }
-			    }
-			
-			    move(LINES - 3, 0);
-			    clrtoeol();
-			
-			    mvprintw(LINES - 3, 0, "Seleccionados: %s", temp);
-			
-			    refresh();
-			}
-			break;
+        	case 10: {
+
+    ITEM **items = menu_items(my_menu);
+
+    int seleccionados = 0;
+
+    for(i = 0; i < item_count(my_menu); i++){
+
+        if(item_value(items[i]) == TRUE){
+
+            ids[seleccionados] = habitos[i].id;
+
+            seleccionados++;
+        }
+    }
+
+    *selected_count = seleccionados;
+
+    option = 1;
+
+    break;
+}
 		}
         wrefresh(my_menu_win);
 		if (option != -1) {
@@ -114,7 +107,7 @@ int menu_available_habits(Habito *habitos, int count){
         unpost_menu(my_menu);
         free_menu(my_menu);
 		
-        for(i = 0; i < n_choices; ++i)
+        for(i = 0; i < count; ++i)
                 free_item(my_items[i]);
 
     

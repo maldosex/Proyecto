@@ -15,7 +15,8 @@
 #include "api/api.h"
 #include "gui/form_login.h"
 #include "gui/form_register.h"
-#include "gui/menu_myHabits.h"
+#include "gui/menu_available_habits.h"
+#include "gui/men_myhabits.h"
 #include "menu.h"
 #include "gui/hp.h"
 
@@ -26,6 +27,8 @@ typedef struct
     pid_t pid;
 
 }shm_general;
+
+
 
 
 
@@ -82,40 +85,114 @@ int main(){
     noecho();
     keypad(stdscr, TRUE);
 
-    while (1){
+    Screen current = SCREEN_LOGIN_MENU;
 
+    while (current != SCREEN_EXIT) {
 
-        int log_menu_option = log_menu();
+        switch(current) {
 
-        if(log_menu_option == 0){
-            int login_status = form_login(shm_p, str_usuario, str_contra);
-            if (login_status == 0)
-            {
-                clear();
-                refresh();
-                int option = hp_menu();
-                if (option == 0)
-                {
-                    int count;
-                    Habito habitos[50];
-                    api_get_habits(shm_p, habitos, &count);
-                    int n = menu_available_habits(habitos, count);
-                }
-                
+            case SCREEN_LOGIN_MENU: {
+                int op = log_menu();
+
+                if (op == 0)
+                    current = SCREEN_LOGIN;
+                else if (op == 1)
+                    current = SCREEN_REGISTER;
+                else
+                    current = SCREEN_EXIT;
+
+                break;
             }
+
+            case SCREEN_LOGIN: {
+
+                int status = form_login(shm_p, str_usuario, str_contra);
+
+                if (status == 1)
+                    current = SCREEN_HOME;
+                else
+                    current = SCREEN_LOGIN_MENU;
+
+                break;
+            }
+
+            case SCREEN_REGISTER: {
+
+                int op = form_register(shm_p);
+
+                if (op == -1)
+                    current = SCREEN_HOME;
+                else
+                    current = SCREEN_LOGIN_MENU;
+
+                break;
+            }
+
+            case SCREEN_HOME: {
+
+                int op = hp_menu();
+
+                if (op == 0)
+                    current = SCREEN_HABITS;
+
+                else if(op == 1)
+                    current = SCREEN_MY_HABITS;
+
+                else
+                    current = SCREEN_LOGIN_MENU;
+
+                break;
+            }           
+
+            case SCREEN_HABITS: {
+
+                Habito habitos[50];
+                int count = 0;
+                int status = api_get_all_habits(shm_p, habitos, &count);
+
+                int habitos_ids[50];
+                int selected_count = 0;
+
+                if(status == 0){
+                    int result = menu_available_habits(habitos, count, habitos_ids, &selected_count);
+
+                    if(result == 1 && selected_count > 0){ 
+                        api_register_usuariohabitos(shm_p, habitos_ids, selected_count);
+                    }
+                }
+                else{
+                
+                    clear();
+                
+                    mvprintw(LINES / 2,(COLS - 30) / 2,"Error obteniendo habitos");
+                
+                    refresh();
+                
+                    getch();
+                }
+
+                api_register_usuariohabitos(shm_p, habitos_ids, selected_count);
             
-        }
-        else if (log_menu_option == 1){
+                current = SCREEN_HOME;
             
-            int register_status = form_register(shm_p);
+                break;
+            }
+
+            case SCREEN_MY_HABITS: {
+
+                Habito habitos[50];
+                int count;
+
+                api_get_user_habits(shm_p,habitos,&count);
+
+                menu_my_habits(habitos, count,  NULL, NULL);
+                current = SCREEN_HOME;
+                break;
         }
-        
-        i++;
     }
 
-
+    }
     endwin();
 
     return 0;
-
 }

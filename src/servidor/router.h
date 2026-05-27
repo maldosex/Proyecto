@@ -4,4 +4,4 @@
 #include "auth_handler.h"
 #include "habit_handler.h"
 
-int route_request(cJSON *request, cJSON *response);
+int route_request(cliente_contexto * cliente_ctxt);

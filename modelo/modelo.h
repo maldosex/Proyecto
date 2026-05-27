@@ -5,6 +5,12 @@
 
 #include "../include/cJSON.h"
 
+#define ACTION_LOGIN 1
+#define ACTION_REGISTER 2
+#define ACTION_GET_HABITS 3
+#define ACTION_ADD_USER_HABITS 4
+#define ACTION_GET_USER_HABITS 5
+
 typedef struct{
     char id;
     char nombre[50];
@@ -30,20 +36,27 @@ typedef struct{
     char contra[25];
 }Usuario_t;
 
-Usuario_t json_to_usuario(cJSON * usuario_json);
+Usuario_t usuario_from_json(cJSON * usuario_json);
 cJSON * usuario_to_json(Usuario_t usuario);
 
-typedef struct respuesta{
+
+typedef struct{
     int estatus;
-    const char *msg;
-    cJSON *data;
+    char msg[100];
+    char data[800];
 }Respuesta_t;
 
-Respuesta_t crear_respuesta(int estatus, const char *msg, cJSON *data);
+Respuesta_t crear_respuesta(int estatus, const char *msg, char *data);
 
 void respuesta_to_json(Respuesta_t respuesta, cJSON * respuesta_json);
 
+typedef struct{
+    int action;
+    char data[800];
+
+}Solicitud_t;
 
 
+Solicitud_t crear_solicitud(int action,const char *data);
 
 #endif

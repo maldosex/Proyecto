@@ -60,11 +60,18 @@ int form_login(shm_privada *shm_p, char * usuario, char * contra){
     wrefresh(my_form_win);
     
 
-	int enviar = 0;
-    int status =10;
+    int respuesta_form = 0;
     char msg[50];
-    while((ch = wgetch(my_form_win)) != KEY_F(1) && status != 0) {
+
+    Usuario_t usuario_login;
+    //Se mantendra en en ciclo del formulario hasta que logra hacer login o decida salir
+
+    while((ch = wgetch(my_form_win))) {
         switch(ch) {
+            case KEY_F(1):
+                respuesta_form = -1;
+                goto cleanup;
+                break;
 			case KEY_BACKSPACE:
             case 127:
             case 8:
@@ -78,17 +85,24 @@ int form_login(shm_privada *shm_p, char * usuario, char * contra){
                 break;
             case 10: // Enter para aceptar
                 form_driver(my_form, REQ_VALIDATION);
-                status = api_login(shm_p, trim(field_buffer(field[0], 0)), trim(field_buffer(field[1], 0)), msg);
-                if(status == 0) goto cleanup;
-                else{
-                    mvwprintw(my_form_win,  9, 2, msg);
+                strcpy(usuario_login.username, trim(field_buffer(field[0], 0)));
+                strcpy(    usuario_login.contra,    trim(field_buffer(field[1], 0)));
+                //Se mantendra en en ciclo del formulario hasta que logra hacer login o decida salir
+                int status = api_login(shm_p,usuario_login,msg); 
+                if(status == 1) {
+					mvwprintw(my_form_win, 8, 2, "Usuario o contrasena incorrectos");
                     wrefresh(my_form_win);
                 }
-                break;
-            default:
-                form_driver(my_form, ch);
-                break;
-        }
+                if(status == 0){
+                    respuesta_form = 1;
+                    goto cleanup;
+                }
+                //Si la llamada a la api de login fue exitosa, se saldra del formulario para continuar con el siguiente           
+                break;        
+            default:            
+                form_driver(my_form, ch);            
+                break;    
+            }
     }
     cleanup:
     unpost_form(my_form);
@@ -98,8 +112,8 @@ int form_login(shm_privada *shm_p, char * usuario, char * contra){
     delwin(my_form_win); // Importante: eliminar ventana creada
     clear();
     refresh();
-    return status; 
-         // Devolvemos 1 si quiere loguearse, 0 si canceló con F1
+    return respuesta_form; 
+    // Devolvemos 1 si quiere loguearse, 0 si canceló con F1
 }
 
 

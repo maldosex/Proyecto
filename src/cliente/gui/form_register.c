@@ -8,9 +8,8 @@ int form_register(shm_privada * shm_p){
     FORM  *my_form;
     WINDOW *my_form_win;
     int ch, rows, cols;
-    Register_data data;
+    Usuario_t usuario;
 
-    
 
 	init_pair(1, COLOR_CYAN, COLOR_BLACK);    // titulo
 	init_pair(2, COLOR_BLACK, COLOR_WHITE);   // campo activo
@@ -69,11 +68,15 @@ int form_register(shm_privada * shm_p){
     wrefresh(my_form_win);
     
 
-	int enviar = 0, status =10;
+	int respuesta_form = 0;
 
     char msg[50];
-    while((ch = wgetch(my_form_win)) != KEY_F(1) && status != 0) {
+    while((ch = wgetch(my_form_win))) {
         switch(ch) {
+            case KEY_F(1):
+                respuesta_form = -1;
+                goto fin;
+                break;
 			case KEY_BACKSPACE:
             case 127:
             case 8:
@@ -94,19 +97,28 @@ int form_register(shm_privada * shm_p){
 					mvwprintw(my_form_win, 18, 4, "No deje espacios vacios");
 					break;
 				}
-                strcpy(data.usuario, trim(field_buffer(field[0], 0)));
-				strcpy(data.contra, trim(field_buffer(field[1], 0)));
-				strcpy(data.nombre, trim(field_buffer(field[2], 0)));
+
+                strcpy(usuario.username, trim(field_buffer(field[0], 0)));
+				strcpy(usuario.contra, trim(field_buffer(field[1], 0)));
+                /*
+				strcpy(usuario.nombre, trim(field_buffer(field[2], 0)));
 				strcpy(data.apellido, trim(field_buffer(field[3], 0)));
 				strcpy(data.correo, trim(field_buffer(field[4], 0)));
 
-                status = api_register(shm_p, data, msg);
-                if(status = 0) goto fin;
+                */
+
+                int status = api_register(shm_p, usuario, msg);
+                //Si se logro el registro:
+                if(status == 0) {
+                    respuesta_form = 1;
+					mvwprintw(my_form_win, 18, 4, "Usuario Registrado, ahora haga login");
+                    wrefresh(my_form_win);
+                    goto fin;
+                }
                 else{
-                    mvwprintw(my_form_win,  9, 2, msg);
+                    mvwprintw(my_form_win,  18, 3, msg);
                     wrefresh(my_form_win);
                 }
-                enviar = 1;
 
 				goto fin;
                 break;
@@ -117,11 +129,12 @@ int form_register(shm_privada * shm_p){
     }
 	fin:
         // Limpieza de ncurses
+        getch();
         unpost_form(my_form);
         free_form(my_form);
         free_field(field[0]);
         free_field(field[1]);
         clear();
         refresh();
-        return enviar; // Devolvemos 1 si quiere loguearse, 0 si canceló con F1
+        return respuesta_form; // Devolvemos 1 si quiere loguearse, 0 si canceló con F1
 }
